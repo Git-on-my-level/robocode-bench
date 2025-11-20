@@ -1,6 +1,6 @@
 """Starter bot template for LLM-generated Tank Royale bots.
 
-The orchestrator copies this file into each attempt workspace. Models should
+The orchestrator copies this file into each variant workspace. Models should
 edit within the `bot/` directory only.
 """
 

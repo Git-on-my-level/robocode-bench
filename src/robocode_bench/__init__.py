@@ -6,4 +6,5 @@ __all__ = [
     "orchestrator",
     "scoring",
     "tankroyale",
+    "baselines",
 ]

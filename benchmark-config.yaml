@@ -10,8 +10,8 @@ generation_limits:
   temperature: 0.2
   top_p: 0.9
   max_calls: 2
-attempt_policy:
-  attempts: 2
+variant_policy:
+  variants: 2
   allow_repair: true
 battle_files:
   battle_config_path: battle_configs/default.json
@@ -23,4 +23,3 @@ resource_limits:
   build_cpu: 2.0
   build_memory_mb: 4096
   build_timeout_seconds: 120
-seeds: [1843, 99127, 8734, 42199, 14, 901, 712, 827, 102233, 19937]

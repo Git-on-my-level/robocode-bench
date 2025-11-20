@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import json
 from typing import List, Optional
 
 import yaml
@@ -15,8 +16,8 @@ class GenerationLimits(BaseModel):
     max_calls: int = Field(..., ge=1)
 
 
-class AttemptPolicy(BaseModel):
-    attempts: int = 1
+class VariantPolicy(BaseModel):
+    variants: int = 1
     allow_repair: bool = True
 
 
@@ -49,7 +50,7 @@ class BenchmarkConfig(BaseModel):
     benchmark_id: str
     versions: TankRoyaleVersions
     generation_limits: GenerationLimits
-    attempt_policy: AttemptPolicy
+    variant_policy: VariantPolicy
     battle_files: BattleFiles
     resource_limits: ResourceLimits
     seeds: List[int]
@@ -60,6 +61,23 @@ class BenchmarkConfig(BaseModel):
         with cfg_path.open("r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
         data.setdefault("seeds", [])
+        if not data.get("seeds"):
+            seeds_path = data.get("battle_files", {}).get("seeds_path")
+            if seeds_path:
+                spath = pathlib.Path(seeds_path)
+                if not spath.is_absolute():
+                    spath = cfg_path.parent / spath
+                if spath.exists():
+                    loaded = json.loads(spath.read_text())
+                    if isinstance(loaded, list):
+                        data["seeds"] = loaded
+        # Backward compatibility: rename attempt_policy -> variant_policy
+        if "attempt_policy" in data and "variant_policy" not in data:
+            data["variant_policy"] = data.pop("attempt_policy")
+        if "variant_policy" in data and "variants" not in data["variant_policy"]:
+            attempts = data["variant_policy"].pop("attempts", None)
+            if attempts is not None:
+                data["variant_policy"]["variants"] = attempts
         return cls(**data)
 
     def ensure_paths(self, root: Optional[pathlib.Path] = None) -> "BenchmarkConfig":
@@ -73,4 +91,3 @@ class BenchmarkConfig(BaseModel):
             battle["seeds_path"] = str((root / battle["seeds_path"]).resolve())
         data["battle_files"] = battle
         return BenchmarkConfig(**data)
-

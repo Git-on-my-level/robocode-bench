@@ -15,6 +15,8 @@ Optional but recommended:
 - `benchmark-config.yaml` pins versions, seeds, and resource limits.
 - `battle_configs/` holds the battle rules and deterministic seeds.
 - `bot_template/` is copied into each workspace to bootstrap an LLM-authored bot.
+- `docs/AGENT_CONTEXT.md` and `docs/TANK_ROYALE_OVERVIEW.md` are copied into `_shared_docs` for the model to read.
+- `baselines/manifest.yaml` lists the baselines used in evaluation (not exposed to models); load it via `robocode_bench.baselines.load_manifest()`.
 - `src/robocode_bench/` contains the orchestrator, scoring, and workspace helpers.
 - `tools/` holds helper scripts (download Tank Royale stack, launch GUI).
 
@@ -22,13 +24,15 @@ Optional but recommended:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements.txt
-PYTHONPATH=src python -m robocode_bench.orchestrator prepare-workspace --model-id demo --attempt-id A1
-PYTHONPATH=src python -m robocode_bench.orchestrator build-bot --workspace workspaces/demo/A1
+PYTHONPATH=src python -m robocode_bench.orchestrator prepare-workspace --model-id demo --variant-id v1
+PYTHONPATH=src python -m robocode_bench.orchestrator build-bot --workspace workspaces/demo/v1
 ```
 
 To download the Tank Royale server/recorder/GUI jars into `tools/bin`:
 ```bash
 python -m robocode_bench.orchestrator download-stack --config benchmark-config.yaml
+# optionally add checksum verification
+python -m robocode_bench.orchestrator download-stack --checksums checksums.json
 ```
 
 Smoke-test the sample bots (requires downloaded jars):
@@ -38,6 +42,8 @@ BOTS=serious,spinner PYTHONPATH=src python tools/run_sample_match.py  # override
 ```
 
 ## Notes
+- Workspaces are isolated per model under `workspaces/<model_id>/<variant_id>`. A shared, read-only doc bundle lives in `workspaces/_shared_docs` and is populated when you run `prepare-workspace`.
+- Keep the Isolation: do not drop other bots or artifacts into `workspaces/_shared_docs`; only the curated docs from the repo should live there.
 - The orchestrator is designed to run headless benchmark matches; the GUI launcher in `tools/run_gui.sh` is for local debugging only.
 - Resource limits described in `SPEC.md` should be enforced by your container/runtime; hooks are provided in the orchestrator to track crashes/timeouts.
 - Recorder output parsing and match orchestration live in `src/robocode_bench`; extend these modules if you need tighter integration with your infra.

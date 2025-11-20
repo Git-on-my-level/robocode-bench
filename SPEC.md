@@ -18,6 +18,12 @@ This specification is intended for implementers of the benchmarking system, not 
 
 ---
 
+### Terminology
+
+In this document, a single run of the pipeline for a given model (code generation + build + evaluation) is called a **variant**. Earlier drafts used the term “attempt”; treat “variant” as the canonical term.
+
+---
+
 ## 1. Scope, Goals, and Non-Goals
 
 ### 1.1 Scope
@@ -191,12 +197,12 @@ All these processes MUST be run inside a container or sandbox for resource contr
 
 ### 5.1 Workspace Layout
 
-For each model `M` and attempt `A`, the Workspace Manager MUST create:
+For each model `M` and variant `V`, the Workspace Manager MUST create:
 
 ```text
 /workspaces/
   M/
-    attempt_A/
+    variant_V/
       prompts/
         initial_prompt.txt
         initial_response.txt
@@ -241,7 +247,7 @@ For Python bots, building is minimal but MUST be explicit:
 
 ### 6.1 Context Provided to the Model
 
-Each model attempt MUST receive identical context, consisting of:
+Each model variant MUST receive identical context, consisting of:
 
 1. **Task description**:
 
@@ -297,7 +303,7 @@ The orchestrator MUST parse this format and write each file to the corresponding
 
 ### 6.3 Generation Limits
 
-For each attempt:
+For each variant:
 
 * Max input tokens: fixed (e.g., 8k).
 * Max output tokens: fixed (e.g., 8k).
@@ -312,7 +318,7 @@ Parameters MUST be identical for all models in a benchmark run and MUST be logge
 
 ---
 
-## 7. Attempt Lifecycle
+## 7. Variant Lifecycle
 
 ### 7.1 Initial Generation
 
@@ -322,7 +328,7 @@ Parameters MUST be identical for all models in a benchmark run and MUST be logge
 
 If file parsing fails (e.g., missing `main.py` or `bot-config.json`):
 
-* Orchestrator MAY attempt a small “fixup” call using the same model with a tightly scoped prompt, or mark the attempt as malformed.
+* Orchestrator MAY attempt a small “fixup” call using the same model with a tightly scoped prompt, or mark the variant as malformed.
 
 ### 7.2 Build & Sanity Check
 
@@ -344,7 +350,7 @@ If build or dry-run fails:
   * Re-run build and dry-run once.
 * If still failing:
 
-  * Mark the attempt as **BuildFailed**; score = 0 for battle metrics but still record everything for analysis.
+  * Mark the variant as **BuildFailed**; score = 0 for battle metrics but still record everything for analysis.
 
 ### 7.3 Tournament Phase
 
@@ -500,7 +506,7 @@ Where `normalized_performance_variance` scales observed variance range into [0,1
 
 ### 9.4 Final Bot Score
 
-The final score for a bot (one model attempt) MUST be:
+The final score for a bot (one model variant) MUST be:
 
 ```text
 BotScore = w_bps * BPS + w_fps * FPS + w_srs * SRS
@@ -514,15 +520,15 @@ Default weights:
 
 All components MUST be in [0,1].
 
-### 9.5 Model-Level Score and Attempts
+### 9.5 Model-Level Score and Variants
 
-If the benchmark allows multiple attempts per model:
+If the benchmark allows multiple variants per model:
 
 * v1.0 SHOULD use **Best-of-N**:
 
-  * `ModelScore = max(BotScore over attempts)`
+  * `ModelScore = max(BotScore over variants)`
 
-Number of allowed attempts (e.g., N=2) MUST be fixed and logged.
+Number of allowed variants (e.g., N=2) MUST be fixed and logged.
 
 ---
 
@@ -610,7 +616,7 @@ Each version MUST fix:
 
 A top-level configuration file, e.g. `benchmark-config.yaml`, MUST exist and include:
 
-* Model generation limits (tokens, temperature, attempts).
+* Model generation limits (tokens, temperature, variants/repair calls).
 * Battle configuration references (`battle-config.json` path).
 * Seeds for all matches.
 * Resource limits.
@@ -656,7 +662,7 @@ The implementation MUST address the following:
 
 6. **Logging**
 
-   * For every failure (build, dry-run, match), logs MUST be preserved and linked to the model, attempt, and match identifiers.
+   * For every failure (build, dry-run, match), logs MUST be preserved and linked to the model, variant, and match identifiers.
 
 ---
 

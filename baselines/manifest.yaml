@@ -1,0 +1,18 @@
+version: 1
+melee_participants: 6  # total bots per classic melee battle (model bot + baselines)
+bots:
+  - id: rammer
+    name: Rammer
+    path: sample_bots/rammer
+    game_types: ["classic", "1v1"]
+    role: "close-range rammer with heavy firepower"
+  - id: spinner
+    name: Spinner
+    path: sample_bots/spinner
+    game_types: ["classic", "1v1"]
+    role: "continuous radar/gun spin with light strafing"
+  - id: serious
+    name: SeriousStriker
+    path: sample_bots/serious
+    game_types: ["classic", "1v1"]
+    role: "perpendicular strafe/aim duelist baseline"

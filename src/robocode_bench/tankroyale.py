@@ -7,6 +7,7 @@ import socket
 import subprocess
 import time
 import urllib.request
+import hashlib
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
@@ -34,22 +35,40 @@ def artifact_url(artifact: str, version: str) -> str:
     return f"{MAVEN_BASE}/{artifact}/{version}/{jar}"
 
 
-def download_artifact(artifact: str, version: str, dest_dir: pathlib.Path) -> pathlib.Path:
+def _sha256(path: pathlib.Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def download_artifact(artifact: str, version: str, dest_dir: pathlib.Path, expected_sha256: str | None = None) -> pathlib.Path:
     dest_dir.mkdir(parents=True, exist_ok=True)
     target = dest_dir / f"{artifact}-{version}.jar"
+    sidecar = dest_dir / f"{artifact}-{version}.sha256"
+    expected = expected_sha256 or (sidecar.read_text().strip().split()[0] if sidecar.exists() else None)
     if target.exists():
+        if expected and _sha256(target) != expected:
+            raise ValueError(f"Checksum mismatch for existing {target}")
         return target
     url = artifact_url(artifact, version)
     with urllib.request.urlopen(url) as resp, target.open("wb") as fh:  # type: ignore[arg-type]
         fh.write(resp.read())
+    if expected:
+        actual = _sha256(target)
+        if actual != expected:
+            target.unlink(missing_ok=True)
+            raise ValueError(f"Checksum mismatch for {target} (expected {expected}, got {actual})")
     return target
 
 
-def download_stack(server: str, recorder: str, gui: str, dest_dir: pathlib.Path) -> dict[str, pathlib.Path]:
+def download_stack(server: str, recorder: str, gui: str, dest_dir: pathlib.Path, checksums: dict[str, str] | None = None) -> dict[str, pathlib.Path]:
+    checksums = checksums or {}
     artifacts = {
-        "server": download_artifact("robocode-tankroyale-server", server, dest_dir),
-        "recorder": download_artifact("robocode-tankroyale-recorder", recorder, dest_dir),
-        "gui": download_artifact("robocode-tankroyale-gui", gui, dest_dir),
+        "server": download_artifact("robocode-tankroyale-server", server, dest_dir, checksums.get("server")),
+        "recorder": download_artifact("robocode-tankroyale-recorder", recorder, dest_dir, checksums.get("recorder")),
+        "gui": download_artifact("robocode-tankroyale-gui", gui, dest_dir, checksums.get("gui")),
     }
     return artifacts
 

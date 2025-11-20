@@ -4,8 +4,8 @@ This document captures the contract between the orchestrator and the coding mode
 
 ## What the model sees
 - Task: write a competitive Python bot for Robocode Tank Royale that plays both 1v1 and classic melee.
-- Context: summarized Tank Royale rules, Python Bot API usage, scoring, and constraints (no network, no filesystem escape, deterministic seeds).
-- Template: the contents of `bot_template/` copied into the attempt workspace.
+- Context: summarized Tank Royale rules, Python Bot API usage, scoring, and constraints (no network, no filesystem escape, deterministic seeds). The shared doc bundle includes `SPEC.md`, `docs/TANK_ROYALE_OVERVIEW.md`, and `docs/AGENT_CONTEXT.md` with the exact battle rules, seeds, and scoring formulas the benchmark uses.
+- Template: the contents of `bot_template/` copied into the variant workspace.
 
 ## What the model must output
 Use the file-oriented format:
@@ -25,9 +25,9 @@ Use the file-oriented format:
 
 Only files under `bot/` may be modified by the model. The orchestrator writes these files straight into the workspace.
 
-## Attempt lifecycle (per SPEC.md)
+## Variant lifecycle (per SPEC.md)
 1. Orchestrator composes the prompt (task + docs + template) and calls the model.
-2. Workspace manager writes files to `workspaces/<model>/<attempt>/bot/`.
+2. Workspace manager writes files to `workspaces/<model>/<variant>/bot/`.
 3. Build runner compiles Python sources via `python -m py_compile`.
 4. Dry-run: start headless server, launch bot alone, ensure it connects and steps.
 5. If build/dry-run fails and repair is allowed, orchestrator issues one repair call with logs + file contents.
@@ -42,7 +42,7 @@ Only files under `bot/` may be modified by the model. The orchestrator writes th
 - No external network calls and no file I/O outside `bot/`.
 - Respect turn timeout (40 ms) to avoid skipped turns.
 
-## Files written per attempt
+## Files written per variant
 ```
 prompts/               # prompt/response transcripts
 bot/                   # model-written code + config
@@ -51,5 +51,10 @@ logs/build.log         # py_compile + build output
 logs/recorder.log      # one per match
 results/metrics.json   # final scores (BPS/FPS/SRS)
 ```
+
+## Workspace isolation
+- Each model gets its own root under `workspaces/<model_id>/<variant_id>/`; nothing from other variants is visible.
+- Shared docs live in `workspaces/_shared_docs/` and contain only the curated benchmark/spec files copied at workspace prep time.
+- Only the bot template and those shared docs are exposed to the model; baseline or peer bots are not placed in the workspace.
 
 Extend or shrink the prompt as long as these invariants hold; the rest of the pipeline stays deterministic via `benchmark-config.yaml` and the seed list.

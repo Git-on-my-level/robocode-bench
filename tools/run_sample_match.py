@@ -7,11 +7,16 @@ import os
 import pathlib
 import signal
 import subprocess
+import sys
 from typing import List
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 from robocode_bench import tankroyale
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
 BOT_NAMES = [name.strip() for name in os.environ.get("BOTS", "rammer,spinner").split(",") if name.strip()]
 JAVA_BIN_PATH = pathlib.Path("/opt/homebrew/opt/openjdk@17/bin/java")
 JAVA_BIN = JAVA_BIN_PATH if JAVA_BIN_PATH.exists() else None
