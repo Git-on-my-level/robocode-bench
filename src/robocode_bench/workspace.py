@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -45,7 +46,7 @@ class WorkspaceManager:
         for path in [prompts, bot_src, logs, results, server]:
             path.mkdir(parents=True, exist_ok=True)
 
-        self._copy_template(template_dir, bot)
+        self._copy_template(template_dir, bot, f"{model_id}:{variant_id}")
         if shared_docs and shared_root:
             self._copy_shared_docs(shared_docs, shared_root)
         return WorkspacePaths(
@@ -59,13 +60,14 @@ class WorkspaceManager:
             shared_docs=shared_root,
         )
 
-    def _copy_template(self, template_dir: pathlib.Path, dest: pathlib.Path) -> None:
+    def _copy_template(self, template_dir: pathlib.Path, dest: pathlib.Path, seed: str) -> None:
         for item in template_dir.iterdir():
             dest_item = dest / item.name
             if item.is_dir():
                 shutil.copytree(item, dest_item, dirs_exist_ok=True)
             else:
                 shutil.copy2(item, dest_item)
+        self._apply_random_appearance(dest / "bot-config.json", seed)
 
     def _copy_shared_docs(self, items: list[pathlib.Path], dest_dir: pathlib.Path) -> None:
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -101,3 +103,65 @@ class WorkspaceManager:
         target = paths.logs / f"{name}.log"
         target.write_text(content, encoding="utf-8")
         return target
+
+    @staticmethod
+    def _apply_random_appearance(cfg_path: pathlib.Path, seed: str) -> None:
+        if not cfg_path.exists():
+            return
+        try:
+            data = json.loads(cfg_path.read_text(encoding="utf-8"))
+        except Exception:
+            return
+
+        # Derive a deterministic palette from model + variant so runs are reproducible.
+        palettes = [
+            {
+                "bodyColor": "#0f172a",
+                "turretColor": "#22c55e",
+                "radarColor": "#38bdf8",
+                "gunColor": "#a855f7",
+                "bulletColor": "#f97316",
+                "scanColor": "#facc15",
+                "tracksColor": "#94a3b8",
+            },
+            {
+                "bodyColor": "#111827",
+                "turretColor": "#fb7185",
+                "radarColor": "#cbd5e1",
+                "gunColor": "#22d3ee",
+                "bulletColor": "#f59e0b",
+                "scanColor": "#10b981",
+                "tracksColor": "#e11d48",
+            },
+            {
+                "bodyColor": "#1f2937",
+                "turretColor": "#f97316",
+                "radarColor": "#22c55e",
+                "gunColor": "#06b6d4",
+                "bulletColor": "#f43f5e",
+                "scanColor": "#eab308",
+                "tracksColor": "#94a3b8",
+            },
+            {
+                "bodyColor": "#0b1526",
+                "turretColor": "#eab308",
+                "radarColor": "#a855f7",
+                "gunColor": "#38bdf8",
+                "bulletColor": "#fb7185",
+                "scanColor": "#22c55e",
+                "tracksColor": "#475569",
+            },
+        ]
+        idx = int(hashlib.sha256(seed.encode()).hexdigest(), 16) % len(palettes)
+        palette = palettes[idx]
+
+        merged = dict(palette)
+        merged.update(data.get("colors", {}))
+        data["colors"] = merged
+        data.setdefault("defaultColors", palette)
+
+        try:
+            cfg_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        except Exception:
+            # Avoid blocking workspace creation on cosmetic failures.
+            return
