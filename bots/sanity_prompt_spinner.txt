@@ -1,0 +1,6 @@
+You are performing Sanity Check 2: a short 1v1 against the sample bot Spinner.
+
+- Ensure Sanity Check 1 (static) passes. Stay in repo root and keep edits inside `bot/`.
+- Run the match: `PYTHONPATH=src python tools/run_sanity_check.py --workspace <workspace> --check spinner --rounds 2 --seed 1 --recorder-jar tools/bin/robocode-tankroyale-recorder-0.34.1.jar`
+- Inspect outputs: `logs/sanity/spinner/server_seed1.log` and recorder log for disconnects/timeouts; `results/sanity_spinner.json` shows winner and scores. Use `bot/logs` or prints for debugging if needed.
+- Adjust your movement/aiming in `bot/src/main.py` based on what failed (e.g., stuck, never firing, skipped turns). Re-run the spinner match until performance is reasonable.

@@ -1,0 +1,6 @@
+You are performing Sanity Check 3: a 1v1 against the sample bot SeriousStriker.
+
+- Confirm Sanity Checks 1 and 2 are green. Work from repo root; only edit files under `bot/`.
+- Run the match: `PYTHONPATH=src python tools/run_sanity_check.py --workspace <workspace> --check serious --rounds 2 --seed 2 --recorder-jar tools/bin/robocode-tankroyale-recorder-0.34.1.jar`
+- Review `logs/sanity/serious/server_seed2.log` and recorder output to spot issues like poor dodging, aim errors, or skipped turns. Summary lives in `results/sanity_serious.json`.
+- Refine targeting/evade logic in `bot/src/main.py` until you see stable survival and damage; rerun this check after each change.

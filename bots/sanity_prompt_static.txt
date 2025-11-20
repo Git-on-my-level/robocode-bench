@@ -1,0 +1,6 @@
+You are performing Sanity Check 1 (static). Start in the repo root.
+
+- Identify your workspace path (e.g., `workspaces/<model>/<variant>`). The bot code lives under `bot/src/main.py` and config at `bot/bot-config.json`.
+- Run the static check: `PYTHONPATH=src python tools/run_sanity_check.py --workspace <workspace> --check static`
+- If it fails, read `logs/sanity/static.log` and `results/sanity_static.json` for errors (py_compile or bot-config issues). Fix the code in `bot/src` or config under `bot/` and rerun until it passes.
+- Keep edits confined to `bot/`. Do not touch baselines or orchestrator code.
