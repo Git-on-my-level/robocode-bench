@@ -15,6 +15,7 @@ from rich import print
 
 from .config import BenchmarkConfig
 from .workspace import WorkspaceManager, WorkspacePaths
+from .artifacts import save_workspace_artifact, ArtifactError
 from . import tankroyale
 from .scoring import (
     BotAggregate,
@@ -498,6 +499,33 @@ def evaluate(
     results_path.parent.mkdir(parents=True, exist_ok=True)
     results_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(f"[green]Evaluation complete[/green]. Results: {results_path}")
+
+
+@app.command()
+def save_artifact(
+    workspace: pathlib.Path = typer.Option(..., help="Path to variant workspace root"),
+    model_id: str = typer.Option(..., help="Model identifier for bots/<model>/<variant>"),
+    variant_id: str = typer.Option(..., help="Variant identifier for bots/<model>/<variant>"),
+    dest_root: pathlib.Path = typer.Option(pathlib.Path("bots"), help="Root directory to store curated artifacts"),
+    benchmark_config: pathlib.Path = typer.Option(pathlib.Path("benchmark-config.yaml"), help="Benchmark config used for scoring"),
+    template_dir: pathlib.Path = typer.Option(pathlib.Path("bot_template"), help="Template directory to hash for provenance"),
+    force: bool = typer.Option(False, help="Overwrite existing artifact directory if present"),
+) -> None:
+    """Copy bot + prompt traces into bots/<model>/<variant>/ with metadata."""
+    try:
+        dest = save_workspace_artifact(
+            workspace=workspace,
+            dest_root=dest_root,
+            model_id=model_id,
+            variant_id=variant_id,
+            benchmark_config=benchmark_config,
+            template_dir=template_dir,
+            force=force,
+        )
+    except ArtifactError as exc:
+        print(f"[red]Artifact save failed[/red]: {exc}")
+        raise typer.Exit(1)
+    print(f"[green]Saved curated artifact to[/green] {dest}")
 
 
 if __name__ == "__main__":
