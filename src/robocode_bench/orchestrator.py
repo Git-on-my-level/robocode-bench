@@ -234,6 +234,7 @@ def _launch_battle(
     game_setup: dict,
     seed: int,
     logs_dir: pathlib.Path,
+    recorder_dir: Optional[pathlib.Path] = None,
     port: int = tankroyale.DEFAULT_PORT,
     java_bin: Optional[pathlib.Path] = None,
     timeout_seconds: int = 300,
@@ -256,7 +257,13 @@ def _launch_battle(
         if not tankroyale.wait_for_port(port=port, timeout=10):
             raise RuntimeError("Server WebSocket not ready in time")
         if recorder_jar:
-            recorder_proc = tankroyale.start_recorder(recorder_jar, recorder_log, server_url=f"ws://localhost:{port}", java_bin=java_bin)
+            recorder_proc = tankroyale.start_recorder(
+                recorder_jar,
+                recorder_log,
+                server_url=f"ws://localhost:{port}",
+                output_dir=recorder_dir,
+                java_bin=java_bin,
+            )
         loops = [_launch_python_bot(p, port) for p in bot_dirs]
         results: list[dict] = []
         try:
@@ -431,6 +438,7 @@ def evaluate(
                 game_setup=game_setup,
                 seed=seed,
                 logs_dir=paths.logs,
+                recorder_dir=paths.results,
                 java_bin=java_bin,
                 port=port,
                 timeout_seconds=cfg.resource_limits.match_timeout_seconds,
@@ -462,6 +470,7 @@ def evaluate(
                 game_setup=game_setup,
                 seed=seed,
                 logs_dir=paths.logs,
+                recorder_dir=paths.results,
                 java_bin=java_bin,
                 port=port,
                 timeout_seconds=cfg.resource_limits.match_timeout_seconds,
