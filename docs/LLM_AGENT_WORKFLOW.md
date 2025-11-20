@@ -38,6 +38,7 @@ Only files under `bot/` may be modified by the model. The orchestrator writes th
 - Must subclass `robocode_tank_royale.bot_api.bot.Bot` and implement `async def run(...):` plus any event handlers.
 - Use the provided `bot-config.json` shape; orchestrator sets `SERVER_URL` and secrets as env vars.
 - `ScannedBotEvent` exposes `x`, `y`, `energy`, `direction`, `speed` but no bearing/distance helpers; use `bearing_to(x, y)` or `gun_bearing_to(x, y)` to aim and `distance_to(x, y)` for range-based firepower.
+- The Python Bot API does not expose `set_max_speed`; movement is controlled via `set_forward` or `set_back` and capped by the engine (8 units/turn).
 - No external network calls and no file I/O outside `bot/`.
 - Respect turn timeout (40 ms) to avoid skipped turns.
 

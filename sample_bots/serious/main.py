@@ -43,7 +43,6 @@ class SeriousStriker(Bot):
         if x < margin or x > width - margin or y < margin or y > height - margin:
             self._move_dir *= -1
             self.set_turn_right(45 * self._move_dir)
-        self.set_max_speed(8)
         self.set_turn_radar_right(45)
         self.set_turn_right(20 * self._move_dir)
         self.set_forward(140 * self._move_dir)

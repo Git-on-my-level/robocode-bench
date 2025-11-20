@@ -15,7 +15,6 @@ class RammerBot(Bot):
     async def run(self) -> None:
         self.set_turn_radar_right(360)
         while self.is_running():
-            self.set_max_speed(8)
             self.set_forward(400)
             self.set_turn_right(20)
             await self.go()
