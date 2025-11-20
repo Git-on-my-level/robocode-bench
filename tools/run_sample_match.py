@@ -12,6 +12,7 @@ from typing import List
 from robocode_bench import tankroyale
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+BOT_NAMES = [name.strip() for name in os.environ.get("BOTS", "rammer,spinner").split(",") if name.strip()]
 JAVA_BIN_PATH = pathlib.Path("/opt/homebrew/opt/openjdk@17/bin/java")
 JAVA_BIN = JAVA_BIN_PATH if JAVA_BIN_PATH.exists() else None
 TOOLS_BIN = ROOT / "tools" / "bin"
@@ -45,6 +46,9 @@ async def controller_run(expected_bots: List[str]) -> list[dict]:
             if payload.get("type") == "BotListUpdate":
                 for bot in payload.get("bots", []):
                     bots[bot["name"]] = bot
+        missing = [name for name in expected_bots if name not in bots]
+        if missing:
+            raise RuntimeError(f"Missing bots in lobby: {missing}")
         addresses = [{"host": bots[name]["host"], "port": bots[name]["port"]} for name in expected_bots]
         if not game_setup:
             game_setup = {
@@ -99,6 +103,13 @@ def launch_bot(path: pathlib.Path) -> subprocess.Popen:
     return subprocess.Popen(["python", "main.py"], cwd=path, env=env)
 
 
+def bot_name_from_config(bot_dir: pathlib.Path) -> str:
+    import json
+
+    cfg = json.loads((bot_dir / "bot-config.json").read_text())
+    return cfg.get("name", bot_dir.name)
+
+
 def main() -> None:
     TOOLS_BIN.mkdir(parents=True, exist_ok=True)
     artifacts = tankroyale.download_stack("0.34.1", "0.34.1", "0.34.1", TOOLS_BIN)
@@ -115,11 +126,13 @@ def main() -> None:
         if not tankroyale.wait_for_port(port=PORT, timeout=5):
             raise RuntimeError("Server did not open WebSocket port in time")
 
-        bots = [launch_bot(ROOT / "sample_bots" / "rammer"), launch_bot(ROOT / "sample_bots" / "spinner")]
+        bot_dirs = [ROOT / "sample_bots" / name for name in BOT_NAMES]
+        bots = [launch_bot(path) for path in bot_dirs]
+        expected_names = [bot_name_from_config(path) for path in bot_dirs]
 
         results: list[dict] = []
         try:
-            results = asyncio.run(asyncio.wait_for(controller_run(["rammer", "spinner"]), timeout=60))
+            results = asyncio.run(asyncio.wait_for(controller_run(expected_names), timeout=60))
         finally:
             for p in bots:
                 try:

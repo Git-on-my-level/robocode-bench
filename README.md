@@ -6,7 +6,7 @@ What’s here:
 - Python orchestrator (`src/robocode_bench`) for workspace management, build checks, and hooks for match execution.
 - Bot workspace template in `bot_template/` for LLMs to edit only under `bot/`.
 - Battle rules + deterministic seeds in `battle_configs/` and pinned versions in `benchmark-config.yaml`.
-- Tooling stubs (`tools/`) to fetch server/recorder/GUI jars and launch the GUI locally.
+- Tooling stubs (`tools/`) to fetch server/recorder/GUI jars and launch the GUI locally. `tools/run_sample_match.py` runs a quick 1v1 between sample bots (`BOTS=rammer,spinner` by default; try `serious,spinner`).
 
 Quickstart:
 ```bash

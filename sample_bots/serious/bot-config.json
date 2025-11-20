@@ -1,0 +1,9 @@
+{
+  "name": "serious-striker",
+  "version": "1.0",
+  "authors": ["benchmark"],
+  "description": "Aggressive strafe-and-fire duelist for Tank Royale baseline",
+  "gameTypes": ["classic", "1v1"],
+  "countryCodes": ["US"],
+  "progLang": "Python"
+}

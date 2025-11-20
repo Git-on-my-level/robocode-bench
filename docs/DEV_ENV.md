@@ -31,6 +31,12 @@ To download the Tank Royale server/recorder/GUI jars into `tools/bin`:
 python -m robocode_bench.orchestrator download-stack --config benchmark-config.yaml
 ```
 
+Smoke-test the sample bots (requires downloaded jars):
+```bash
+PYTHONPATH=src python tools/run_sample_match.py               # defaults to rammer vs spinner
+BOTS=serious,spinner PYTHONPATH=src python tools/run_sample_match.py  # override bot pair
+```
+
 ## Notes
 - The orchestrator is designed to run headless benchmark matches; the GUI launcher in `tools/run_gui.sh` is for local debugging only.
 - Resource limits described in `SPEC.md` should be enforced by your container/runtime; hooks are provided in the orchestrator to track crashes/timeouts.
