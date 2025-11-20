@@ -1,0 +1,11 @@
+{
+  "name": "llm-starter-bot",
+  "version": "1.0",
+  "authors": ["llm"],
+  "description": "Starter template for LLM-generated Tank Royale bots",
+  "gameTypes": ["classic", "1v1"],
+  "countryCodes": ["US"],
+  "platform": "Python",
+  "progLang": "Python",
+  "homepage": ""
+}

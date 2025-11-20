@@ -1,0 +1,9 @@
+{
+  "name": "rammer",
+  "version": "1.0",
+  "authors": ["benchmark"],
+  "description": "Simple rammer baseline bot",
+  "gameTypes": ["classic", "1v1"],
+  "countryCodes": ["US"],
+  "progLang": "Python"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "spinner",
+  "version": "1.0",
+  "authors": ["benchmark"],
+  "description": "Spinner baseline bot",
+  "gameTypes": ["classic", "1v1"],
+  "countryCodes": ["US"],
+  "progLang": "Python"
+}

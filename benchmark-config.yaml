@@ -1,0 +1,26 @@
+benchmark_id: llm-tank-royale-v1.0-python
+versions:
+  server: "0.34.1"
+  recorder: "0.34.1"
+  gui: "0.34.1"
+  python_bot_api: "0.34.1"
+generation_limits:
+  max_input_tokens: 8000
+  max_output_tokens: 8000
+  temperature: 0.2
+  top_p: 0.9
+  max_calls: 2
+attempt_policy:
+  attempts: 2
+  allow_repair: true
+battle_files:
+  battle_config_path: battle_configs/default.json
+  seeds_path: battle_configs/seeds.json
+resource_limits:
+  bot_cpu: 1.0
+  bot_memory_mb: 512
+  match_timeout_seconds: 300
+  build_cpu: 2.0
+  build_memory_mb: 4096
+  build_timeout_seconds: 120
+seeds: [1843, 99127, 8734, 42199, 14, 901, 712, 827, 102233, 19937]

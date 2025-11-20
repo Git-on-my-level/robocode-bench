@@ -1,0 +1,13 @@
+{
+  "battlefield": {"width": 800, "height": 600},
+  "gameTypes": ["classic", "1v1"],
+  "numberOfRounds": 10,
+  "turnTimeout": 40,
+  "gunCoolingRate": 0.1,
+  "maxInactivityTurns": 450,
+  "minNumberOfParticipants": 2,
+  "readyTimeout": 10000,
+  "turnsPerSecond": 60,
+  "enableSelfColor": true,
+  "arenaWalls": true
+}
